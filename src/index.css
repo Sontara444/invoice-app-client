@@ -1,0 +1,44 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+
+  /* Green accent - Monefy inspired */
+  --color-primary: #16a34a;
+  --color-primary-hover: #15803d;
+  --color-primary-light: #dcfce7;
+  --color-primary-text: #14532d;
+
+  /* Layout */
+  --color-background: #f0f2f5;
+  --color-sidebar: #ffffff;
+  --color-surface: #ffffff;
+
+  /* Text */
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  --color-text-label: #9ca3af;
+
+  /* Borders */
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+
+  /* Status */
+  --color-success: #16a34a;
+  --color-success-bg: #dcfce7;
+  --color-success-text: #14532d;
+  --color-draft-bg: #fef9c3;
+  --color-draft-text: #713f12;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply bg-background text-text-main font-sans antialiased;
+    margin: 0;
+  }
+}
