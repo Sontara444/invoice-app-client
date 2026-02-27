@@ -2,14 +2,15 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, ArrowLeftRight, Wallet, FileText, BarChart2,
-    Settings, HelpCircle
+    Settings, HelpCircle, LogOut
 } from 'lucide-react';
+import AuthContext from '../context/AuthContext';
 
 const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, to: '#' },
+    { label: 'Dashboard', icon: LayoutDashboard, to: '/' },
     { label: 'Transactions', icon: ArrowLeftRight, to: '#' },
     { label: 'My Wallet', icon: Wallet, to: '#' },
-    { label: 'Invoices', icon: FileText, to: '/' },
+    { label: 'Invoices', icon: FileText, to: '/invoices' },
     { label: 'Reports', icon: BarChart2, to: '#' },
 ];
 
@@ -21,19 +22,20 @@ const prefItems = [
 const NavItem = ({ item, active }) => (
     <Link
         to={item.to}
-        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group
+        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 group
             ${active
-                ? 'bg-primary text-white shadow-sm'
+                ? 'text-primary bg-primary-light/30'
                 : 'text-text-muted hover:bg-border-light hover:text-text-main'
             }`}
     >
-        <item.icon size={18} className={active ? 'text-white' : 'text-text-label group-hover:text-text-muted'} />
+        <item.icon size={18} className={active ? 'text-primary' : 'text-text-label group-hover:text-text-muted'} />
         {item.label}
     </Link>
 );
 
 const Sidebar = () => {
     const { pathname } = useLocation();
+    const { user, logout } = React.useContext(AuthContext);
 
     const isActive = (to) => {
         if (to === '/') return pathname === '/' || pathname.startsWith('/invoices');
@@ -47,17 +49,21 @@ const Sidebar = () => {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <div className="w-4 h-4 bg-white rotate-45 rounded-sm"></div>
                 </div>
-                <span className="font-bold text-lg text-text-main tracking-tight">Monefy</span>
+                <span className="font-bold text-lg text-text-main tracking-tight">Invoice App</span>
             </div>
 
             {/* User */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-text-muted">U</div>
-                <div className="min-w-0">
-                    <p className="text-sm font-semibold text-text-main truncate">Uxerflow</p>
-                    <p className="text-xs text-text-muted truncate">Business Account</p>
+            {user && (
+                <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-text-muted">
+                        {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-text-main truncate">{user.name}</p>
+                        <p className="text-xs text-text-muted truncate">{user.email}</p>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Nav */}
             <div className="flex-1 p-3 space-y-1">
@@ -70,6 +76,14 @@ const Sidebar = () => {
                 {prefItems.map((item) => (
                     <NavItem key={item.label} item={item} active={false} />
                 ))}
+
+                <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 mt-4 rounded-xl text-sm font-medium transition-all duration-150 text-red-500 hover:bg-red-50"
+                >
+                    <LogOut size={18} />
+                    Log Out
+                </button>
             </div>
         </aside>
     );

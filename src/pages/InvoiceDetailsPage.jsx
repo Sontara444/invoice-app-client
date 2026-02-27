@@ -1,18 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
-    AlertCircle, RefreshCw, Bell, ArrowLeft,
-    Archive, ArchiveRestore, Loader2, DollarSign, CheckCircle, Clock
+    AlertCircle, RefreshCw, Bell, ArrowLeft, Calendar,
+    Archive, ArchiveRestore, Loader2, DollarSign, CheckCircle, Clock, Download
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { getInvoice, addPayment, archiveInvoice, restoreInvoice } from '../services/invoiceApi';
 import AddPaymentModal from '../components/AddPaymentModal';
+import { formatCurrency } from '../utils/formatters';
 
-const StatusBadge = ({ status }) => {
-    const isPaid = status === 'PAID';
+const StatusBadge = ({ invoice }) => {
+    const isPaid = invoice.status === 'PAID';
+    const isOverdue = !isPaid && new Date(invoice.dueDate) < new Date();
+
+    let label = invoice.status;
+    let colorClass = 'bg-draft-bg text-draft-text';
+    let Icon = Clock;
+
+    if (isPaid) {
+        colorClass = 'bg-success-bg text-success-text';
+        Icon = CheckCircle;
+    } else if (isOverdue) {
+        label = 'OVERDUE';
+        colorClass = 'bg-red-50 text-red-600';
+        Icon = AlertCircle;
+    }
+
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${isPaid ? 'bg-success-bg text-success-text' : 'bg-draft-bg text-draft-text'}`}>
-            {isPaid ? <CheckCircle size={12} /> : <Clock size={12} />}
-            {status}
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+            <Icon size={12} />
+            {label}
         </span>
     );
 };
@@ -25,6 +43,8 @@ const InvoiceDetailsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [archiving, setArchiving] = useState(false);
+    const [downloadingPDF, setDownloadingPDF] = useState(false);
+    const printRef = React.useRef();
 
     const fetchInvoice = async () => {
         setLoading(true);
@@ -65,6 +85,57 @@ const InvoiceDetailsPage = () => {
             console.error('Archive/Restore failed:', err.message);
         } finally {
             setArchiving(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!printRef.current) return;
+        setDownloadingPDF(true);
+        try {
+            // Use standard A4 dimensions (in mm)
+            const a4Width = 210;
+            const a4Height = 297;
+            const padding = 10; // 10mm padding on all sides
+
+            const canvas = await html2canvas(printRef.current, {
+                scale: 2, // High resolution
+                useCORS: true,
+                logging: false,
+                windowWidth: 800 // Force a specific width for consistent rendering regardless of screen size
+            });
+            const imgData = canvas.toDataURL('image/png');
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Calculate ratios to fit within A4 minus padding
+            const printableWidth = a4Width - (padding * 2);
+            const printableHeight = a4Height - (padding * 2);
+
+            // Calculate the image dimensions to maintain aspect ratio
+            const imgAspectRatio = canvas.width / canvas.height;
+            let imgWidth = printableWidth;
+            let imgHeight = imgWidth / imgAspectRatio;
+
+            // If the calculated height is greater than the printable height, scale down by height instead
+            if (imgHeight > printableHeight) {
+                imgHeight = printableHeight;
+                imgWidth = imgHeight * imgAspectRatio;
+            }
+
+            // Center the image horizontally
+            const xOffset = padding + ((printableWidth - imgWidth) / 2);
+            const yOffset = padding;
+
+            pdf.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
+            pdf.save(`Invoice-${invoice.invoiceNumber}.pdf`);
+        } catch (err) {
+            console.error('Failed to generate PDF:', err);
+        } finally {
+            setDownloadingPDF(false);
         }
     };
 
@@ -110,6 +181,14 @@ const InvoiceDetailsPage = () => {
                         <Bell size={18} />
                     </button>
                     <button
+                        onClick={handleDownloadPDF}
+                        disabled={downloadingPDF}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-border text-text-muted hover:border-text-muted transition-colors disabled:opacity-50"
+                    >
+                        {downloadingPDF ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                        PDF
+                    </button>
+                    <button
                         onClick={handleArchiveToggle}
                         disabled={archiving}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors disabled:opacity-50 ${invoice.isArchived ? 'border-primary-hover text-primary hover:bg-primary-light' : 'border-border text-text-muted hover:border-text-muted'}`}
@@ -129,10 +208,10 @@ const InvoiceDetailsPage = () => {
             </header>
 
             {/* Main two-column content */}
-            <div className="flex-1 p-8 flex flex-col lg:flex-row gap-6">
+            <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                 {/* LEFT: Invoice Details */}
-                <div className="flex-1 space-y-5">
+                <div className="space-y-5 min-w-0">
 
                     {/* Archived Banner */}
                     {invoice.isArchived && (
@@ -171,15 +250,16 @@ const InvoiceDetailsPage = () => {
                                 <p className="text-xs text-text-label font-medium uppercase tracking-wider mb-1.5">Due date</p>
                                 <div className="border border-border rounded-xl px-4 py-3 bg-background flex items-center justify-between">
                                     <p className="text-sm text-text-main">{new Date(invoice.dueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                    <Calendar size={18} className="text-text-muted" />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Issue Date */}
+                        {/* Address */}
                         <div>
-                            <p className="text-xs text-text-label font-medium uppercase tracking-wider mb-1.5">Issue date</p>
+                            <p className="text-xs text-text-label font-medium uppercase tracking-wider mb-1.5">Address</p>
                             <div className="border border-border rounded-xl px-4 py-3 bg-background">
-                                <p className="text-sm text-text-main">{new Date(invoice.issueDate).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                <p className="text-sm text-text-main">{invoice.address || 'No address provided'}</p>
                             </div>
                         </div>
                     </div>
@@ -201,8 +281,8 @@ const InvoiceDetailsPage = () => {
                             <div key={item._id} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-4 py-3.5 border-b border-border-light last:border-0">
                                 <span className="text-sm text-text-main font-medium">{item.description}</span>
                                 <span className="text-sm text-text-muted text-center">{item.quantity}</span>
-                                <span className="text-sm text-text-muted text-right">${Number(item.unitPrice).toFixed(2)}</span>
-                                <span className="text-sm font-semibold text-text-main text-right">${Number(item.lineTotal).toFixed(2)}</span>
+                                <span className="text-sm text-text-muted text-right">{formatCurrency(item.unitPrice)}</span>
+                                <span className="text-sm font-semibold text-text-main text-right">{formatCurrency(item.lineTotal)}</span>
                             </div>
                         ))}
                     </div>
@@ -224,7 +304,7 @@ const InvoiceDetailsPage = () => {
                                                 <DollarSign size={16} className="text-success" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-semibold text-text-main">${Number(payment.amount).toFixed(2)}</p>
+                                                <p className="text-sm font-semibold text-text-main">{formatCurrency(payment.amount)}</p>
                                                 <p className="text-xs text-text-muted">{new Date(payment.paymentDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
                                             </div>
                                         </div>
@@ -237,17 +317,17 @@ const InvoiceDetailsPage = () => {
                 </div>
 
                 {/* RIGHT: Preview / Summary */}
-                <div className="w-full lg:w-80 shrink-0">
+                <div className="w-full min-w-0">
                     <div className="bg-sidebar rounded-2xl border border-border overflow-hidden sticky top-24">
                         {/* Preview Header */}
                         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
                             <h3 className="font-bold text-text-main">Preview</h3>
-                            <StatusBadge status={invoice.status} />
+                            <StatusBadge invoice={invoice} />
                         </div>
 
                         {/* Invoice Preview */}
                         <div className="p-6 bg-background">
-                            <div className="bg-sidebar rounded-xl border border-border p-5 space-y-4">
+                            <div ref={printRef} className="bg-sidebar rounded-xl border border-border p-5 space-y-4">
                                 {/* Title + Logo */}
                                 <div className="flex items-start justify-between">
                                     <div>
@@ -259,15 +339,28 @@ const InvoiceDetailsPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Billed To + Due Date */}
+                                {/* Billed To + Dates + Address */}
                                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border">
-                                    <div>
-                                        <p className="text-xs text-text-label mb-1">Billed to</p>
-                                        <p className="text-sm font-semibold text-text-main">{invoice.customerName}</p>
+                                    <div className="flex flex-col gap-3">
+                                        <div>
+                                            <p className="text-xs text-text-label mb-1">Billed to</p>
+                                            <p className="text-sm font-semibold text-text-main">{invoice.customerName}</p>
+                                            <p className="text-xs text-text-muted mt-0.5">{invoice.customerEmail}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-text-label mb-1">Address</p>
+                                            <p className="text-sm font-medium text-text-main leading-tight">{invoice.address || '-'}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-xs text-text-label mb-1">Due date</p>
-                                        <p className="text-sm font-semibold text-text-main">{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                    <div className="flex flex-col gap-3">
+                                        <div>
+                                            <p className="text-xs text-text-label mb-1">Issue date</p>
+                                            <p className="text-sm font-semibold text-text-main">{new Date(invoice.issueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-text-label mb-1">Due date</p>
+                                            <p className="text-sm font-semibold text-text-main">{new Date(invoice.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -282,8 +375,8 @@ const InvoiceDetailsPage = () => {
                                         <div key={item._id} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-1 py-1.5 border-b border-border-light last:border-0">
                                             <span className="text-[11px] text-text-main truncate">{item.description}</span>
                                             <span className="text-[11px] text-text-muted">{item.quantity}</span>
-                                            <span className="text-[11px] text-text-muted">${Number(item.unitPrice).toFixed(0)}</span>
-                                            <span className="text-[11px] font-medium text-text-main">${Number(item.lineTotal).toFixed(0)}</span>
+                                            <span className="text-[11px] text-text-muted">{formatCurrency(item.unitPrice)}</span>
+                                            <span className="text-[11px] font-medium text-text-main">{formatCurrency(item.lineTotal)}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -292,15 +385,21 @@ const InvoiceDetailsPage = () => {
                                 <div className="pt-3 border-t border-border space-y-1.5">
                                     <div className="flex justify-between text-xs text-text-muted">
                                         <span>Subtotal</span>
-                                        <span>${Number(invoice.total).toFixed(2)}</span>
+                                        <span>{formatCurrency(invoice.total - (invoice.taxAmount || 0))}</span>
                                     </div>
+                                    {(invoice.taxAmount > 0) && (
+                                        <div className="flex justify-between text-xs text-text-muted">
+                                            <span>Tax ({invoice.taxRate || 10}%)</span>
+                                            <span>{formatCurrency(invoice.taxAmount)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-xs text-text-muted">
                                         <span>Amount Paid</span>
-                                        <span className="text-primary">-${Number(invoice.amountPaid).toFixed(2)}</span>
+                                        <span className="text-primary">-{formatCurrency(invoice.amountPaid)}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm font-bold text-text-main pt-2 border-t border-border mt-2">
+                                    <div className="flex justify-between text-[15px] font-bold text-primary pt-2 border-t border-border mt-2">
                                         <span>Balance Due</span>
-                                        <span>${Number(invoice.balanceDue).toFixed(2)}</span>
+                                        <span>{formatCurrency(invoice.balanceDue)}</span>
                                     </div>
                                 </div>
                             </div>

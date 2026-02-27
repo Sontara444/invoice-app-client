@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, DollarSign, AlertCircle, Loader2 } from 'lucide-react';
+import { formatCurrency } from '../utils/formatters';
 
 const AddPaymentModal = ({ isOpen, onClose, balanceDue, onPaymentSubmit, submitting }) => {
     const [amount, setAmount] = useState('');
@@ -11,11 +12,11 @@ const AddPaymentModal = ({ isOpen, onClose, balanceDue, onPaymentSubmit, submitt
         e.preventDefault();
         const paymentAmount = parseFloat(amount);
         if (isNaN(paymentAmount) || paymentAmount <= 0) {
-            setError('Amount must be greater than $0.00.');
+            setError('Amount must be greater than 0.');
             return;
         }
         if (paymentAmount > balanceDue) {
-            setError(`Amount cannot exceed the balance due of $${Number(balanceDue).toFixed(2)}.`);
+            setError(`Amount cannot exceed the balance due of ${formatCurrency(balanceDue)}.`);
             return;
         }
         setError('');
@@ -61,7 +62,9 @@ const AddPaymentModal = ({ isOpen, onClose, balanceDue, onPaymentSubmit, submitt
                             Payment Amount
                         </label>
                         <div className="relative">
-                            <span className="absolute inset-y-0 left-4 flex items-center text-text-muted text-sm pointer-events-none">$</span>
+                            <span className="absolute inset-y-0 left-4 flex items-center text-text-muted text-sm pointer-events-none">
+                                {formatCurrency(0).replace(/[0-9.,]/g, '').trim()}
+                            </span>
                             <input
                                 type="number"
                                 id="amount"
@@ -75,7 +78,7 @@ const AddPaymentModal = ({ isOpen, onClose, balanceDue, onPaymentSubmit, submitt
                             />
                         </div>
                         <p className="text-xs text-text-muted mt-2">
-                            Balance Due: <span className="font-semibold text-text-main">${Number(balanceDue).toFixed(2)}</span>
+                            Balance Due: <span className="font-semibold text-text-main">{formatCurrency(balanceDue)}</span>
                         </p>
                     </div>
 

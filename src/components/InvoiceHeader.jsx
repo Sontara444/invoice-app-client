@@ -64,11 +64,11 @@ const InvoiceHeader = ({ invoice, onArchiveToggle, archiving }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border pt-6 mt-6">
                 <div className="flex items-center gap-3">
                     <div className="p-3 bg-background rounded-xl text-primary">
-                        <Calendar size={20} />
+                        <FileText size={20} />
                     </div>
                     <div>
-                        <p className="text-sm text-text-muted uppercase tracking-wider font-semibold">Issue Date</p>
-                        <p className="font-medium text-text-main">{new Date(invoice.issueDate).toLocaleDateString()}</p>
+                        <p className="text-sm text-text-muted uppercase tracking-wider font-semibold">Address</p>
+                        <p className="font-medium text-text-main">{invoice.address || '-'}</p>
                     </div>
                 </div>
 
