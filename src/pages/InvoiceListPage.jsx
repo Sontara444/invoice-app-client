@@ -98,9 +98,9 @@ const InvoiceListPage = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#F8F9FA]">
             {/* Top Header */}
-            <header className="flex items-center justify-between px-10 py-5 bg-white border-b border-border sticky top-0 z-20">
-                <div className="flex items-center gap-4 bg-[#F3F4F6] rounded-xl px-5 py-2.5 w-[320px]">
-                    <Search size={18} className="text-text-muted" />
+            <header className="flex flex-col md:flex-row md:items-center justify-between px-6 md:px-10 py-5 bg-white border-b border-border sticky top-0 z-20 gap-4">
+                <div className="flex items-center gap-4 bg-[#F3F4F6] rounded-xl px-5 py-2.5 w-full md:w-[320px]">
+                    <Search size={18} className="text-text-muted shrink-0" />
                     <input
                         type="text"
                         placeholder="Search Invoices..."
@@ -109,7 +109,7 @@ const InvoiceListPage = () => {
                         className="bg-transparent text-[14px] text-text-main placeholder:text-text-muted outline-none w-full font-medium"
                     />
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center justify-end gap-6 w-full md:w-auto">
                     <button className="text-text-muted hover:text-text-main transition-colors">
                         <Bell size={22} />
                     </button>
@@ -123,20 +123,20 @@ const InvoiceListPage = () => {
             </header>
 
             {/* Page Title Section */}
-            <div className="px-10 py-8 flex items-end justify-between">
-                <h1 className="text-[32px] font-black text-text-main tracking-tight leading-none">Invoices</h1>
+            <div className="px-6 md:px-10 py-6 md:py-8 flex flex-col md:flex-row md:items-end justify-between gap-2">
+                <h1 className="text-[28px] md:text-[32px] font-black text-text-main tracking-tight leading-none">Invoices</h1>
                 <p className="text-text-muted text-[13px] font-bold uppercase tracking-wider">{filteredInvoices.length} invoices</p>
             </div>
 
             {/* Filter Tabs */}
-            <div className="px-10 mb-6 flex items-center gap-2">
+            <div className="px-6 md:px-10 mb-6 flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
                 {['All', 'Pending', 'Paid', 'Overdue'].map(filter => (
                     <button
                         key={filter}
                         onClick={() => setActiveFilter(filter)}
                         className={`px-5 py-2 text-[13px] font-bold rounded-full transition-colors ${activeFilter === filter
-                                ? 'bg-[#22C55E] text-white shadow-sm'
-                                : 'bg-white text-text-muted border border-border hover:bg-gray-50 hover:text-text-main'
+                            ? 'bg-[#22C55E] text-white shadow-sm'
+                            : 'bg-white text-text-muted border border-border hover:bg-gray-50 hover:text-text-main'
                             }`}
                     >
                         {filter}
@@ -145,9 +145,9 @@ const InvoiceListPage = () => {
             </div>
 
             {/* Invoices List Display */}
-            <div className="px-10 pb-10">
-                <div className="bg-white rounded-[24px] border border-border overflow-hidden shadow-sm">
-                    <table className="w-full text-left">
+            <div className="px-4 md:px-10 pb-10 w-full">
+                <div className="bg-white rounded-2xl md:rounded-[24px] border border-border shadow-sm overflow-w-full overflow-x-auto">
+                    <table className="w-full text-left min-w-[800px]">
                         <thead>
                             <tr className="border-b border-border/60">
                                 <th className="px-8 py-5 text-[11px] font-black text-text-muted uppercase tracking-[0.1em]">Invoice</th>
@@ -204,6 +204,18 @@ const InvoiceListPage = () => {
                     </table>
                 </div>
             </div>
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    height: 4px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background-color: #e5e7eb;
+                    border-radius: 20px;
+                }
+            `}</style>
         </div>
     );
 };

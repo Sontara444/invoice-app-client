@@ -77,7 +77,7 @@ const DashboardPage = () => {
     return (
         <div className="flex flex-col min-h-screen">
             {/* Top Bar */}
-            <header className="flex items-center justify-between px-8 py-4 bg-sidebar border-b border-border sticky top-0 z-10">
+            <header className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-8 py-4 bg-sidebar border-b border-border sticky top-0 z-10 gap-4">
                 <div className="flex items-center gap-3 bg-background rounded-xl px-4 py-2 w-64">
                     <Search size={16} className="text-text-label" />
                     <input
@@ -99,9 +99,9 @@ const DashboardPage = () => {
                 </div>
             </header>
 
-            <div className="flex-1 p-8 space-y-8">
+            <div className="flex-1 p-4 md:p-8 space-y-6 md:space-y-8 overflow-x-hidden">
                 <div>
-                    <h1 className="text-2xl font-black text-text-main tracking-tight">Financial Overview</h1>
+                    <h1 className="text-xl md:text-2xl font-black text-text-main tracking-tight">Financial Overview</h1>
                     <p className="text-text-muted text-sm">Welcome back! Here's what's happening with your business today.</p>
                 </div>
 
@@ -137,7 +137,7 @@ const DashboardPage = () => {
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                     {/* Recent Invoices */}
                     <div className="bg-sidebar rounded-2xl border border-border overflow-hidden">
                         <div className="p-6 border-b border-border flex justify-between items-center">

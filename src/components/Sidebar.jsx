@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, ArrowLeftRight, Wallet, FileText, BarChart2,
-    Settings, HelpCircle, LogOut
+    Settings, HelpCircle, LogOut, X
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 
@@ -19,9 +19,10 @@ const prefItems = [
     { label: 'Help Center', icon: HelpCircle, to: '#' },
 ];
 
-const NavItem = ({ item, active }) => (
+const NavItem = ({ item, active, onClick }) => (
     <Link
         to={item.to}
+        onClick={onClick}
         className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 group
             ${active
                 ? 'text-primary bg-primary-light/30'
@@ -33,7 +34,7 @@ const NavItem = ({ item, active }) => (
     </Link>
 );
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
     const { pathname } = useLocation();
     const { user, logout } = React.useContext(AuthContext);
 
@@ -43,49 +44,70 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="w-56 shrink-0 h-screen sticky top-0 flex flex-col bg-sidebar border-r border-border overflow-y-auto">
-            {/* Logo */}
-            <div className="flex items-center gap-2.5 px-5 py-5 border-b border-border">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white rotate-45 rounded-sm"></div>
-                </div>
-                <span className="font-bold text-lg text-text-main tracking-tight">Invoice App</span>
-            </div>
-
-            {/* User */}
-            {user && (
-                <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-text-muted">
-                        {user.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                        <p className="text-sm font-semibold text-text-main truncate">{user.name}</p>
-                        <p className="text-xs text-text-muted truncate">{user.email}</p>
-                    </div>
-                </div>
+        <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/20 z-40 md:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
             )}
 
-            {/* Nav */}
-            <div className="flex-1 p-3 space-y-1">
-                <p className="px-4 py-2 text-xs font-semibold text-text-label uppercase tracking-wider">Main Menu</p>
-                {navItems.map((item) => (
-                    <NavItem key={item.label} item={item} active={isActive(item.to)} />
-                ))}
+            <aside className={`w-64 md:w-56 shrink-0 h-screen fixed md:sticky top-0 flex flex-col bg-sidebar border-r border-border overflow-y-auto z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+                {/* Logo & Close Button */}
+                <div className="flex items-center justify-between px-5 py-5 border-b border-border">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <div className="w-4 h-4 bg-white rotate-45 rounded-sm"></div>
+                        </div>
+                        <span className="font-bold text-lg text-text-main tracking-tight">Invoice App</span>
+                    </div>
+                    <button
+                        onClick={() => setIsOpen(false)}
+                        className="md:hidden p-1 text-text-muted hover:bg-gray-100 rounded-lg"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
 
-                <p className="px-4 py-2 mt-4 text-xs font-semibold text-text-label uppercase tracking-wider">Preference</p>
-                {prefItems.map((item) => (
-                    <NavItem key={item.label} item={item} active={false} />
-                ))}
+                {/* User */}
+                {user && (
+                    <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-text-muted">
+                            {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-sm font-semibold text-text-main truncate">{user.name}</p>
+                            <p className="text-xs text-text-muted truncate">{user.email}</p>
+                        </div>
+                    </div>
+                )}
 
-                <button
-                    onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 mt-4 rounded-xl text-sm font-medium transition-all duration-150 text-red-500 hover:bg-red-50"
-                >
-                    <LogOut size={18} />
-                    Log Out
-                </button>
-            </div>
-        </aside>
+                {/* Nav */}
+                <div className="flex-1 p-3 space-y-1">
+                    <p className="px-4 py-2 text-xs font-semibold text-text-label uppercase tracking-wider">Main Menu</p>
+                    {navItems.map((item) => (
+                        <NavItem key={item.label} item={item} active={isActive(item.to)} onClick={() => setIsOpen(false)} />
+                    ))}
+
+                    <p className="px-4 py-2 mt-4 text-xs font-semibold text-text-label uppercase tracking-wider">Preference</p>
+                    {prefItems.map((item) => (
+                        <NavItem key={item.label} item={item} active={false} onClick={() => setIsOpen(false)} />
+                    ))}
+
+                    <button
+                        onClick={() => {
+                            logout();
+                            setIsOpen(false);
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 mt-4 rounded-xl text-sm font-medium transition-all duration-150 text-red-500 hover:bg-red-50"
+                    >
+                        <LogOut size={18} />
+                        Log Out
+                    </button>
+                </div>
+            </aside>
+        </>
     );
 };
 

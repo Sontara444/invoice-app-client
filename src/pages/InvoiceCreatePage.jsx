@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, ArrowLeft, Loader2, ChevronDown, Calendar } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Loader2, ChevronDown, Calendar, AlertCircle } from 'lucide-react';
 import { createInvoice } from '../services/invoiceApi';
 import { formatCurrency } from '../utils/formatters';
 
@@ -95,11 +95,11 @@ const InvoiceCreatePage = () => {
     return (
         <div className="flex flex-col min-h-screen bg-transparent">
             {/* Header */}
-            <header className="flex items-center justify-between px-8 py-5 border-b border-border sticky top-0 z-20 bg-white">
-                <div className="flex items-center gap-6">
+            <header className="flex flex-col md:flex-row md:items-center justify-between px-4 md:px-8 py-4 bg-white border-b border-border sticky top-0 z-20 gap-4">
+                <div className="flex items-center gap-4 md:gap-6">
                     <button
                         onClick={() => navigate('/invoices')}
-                        className="p-1 -ml-2 rounded-xl hover:bg-sidebar text-text-muted transition-colors opacity-0 hover:opacity-100 absolute left-4"
+                        className="p-1 -ml-1 md:-ml-2 rounded-xl hover:bg-sidebar text-text-muted transition-colors opacity-100 hover:opacity-100 md:opacity-0 md:absolute md:left-4"
                     >
                         <ArrowLeft size={20} />
                     </button>
@@ -116,17 +116,20 @@ const InvoiceCreatePage = () => {
                         </button>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
                     {error && (
-                        <span className="text-red-500 text-[13px] font-medium max-w-[300px] truncate">
-                            {error}
-                        </span>
+                        <div className="flex items-center gap-2 px-3.5 py-2 bg-red-50 text-red-600 rounded-lg border border-red-200 shadow-sm animate-in fade-in zoom-in duration-300 w-full md:w-auto">
+                            <AlertCircle size={16} className="shrink-0" />
+                            <span className="text-[13px] font-bold tracking-wide max-w-[300px] truncate">
+                                {error}
+                            </span>
+                        </div>
                     )}
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
                         <button
                             onClick={() => handleSave('DRAFT')}
                             disabled={!!submittingTo}
-                            className="px-6 py-2.5 text-[13px] font-bold tracking-wide rounded-full border border-border text-text-main hover:bg-sidebar transition-colors disabled:opacity-50 flex items-center gap-2"
+                            className="flex-1 md:flex-none justify-center px-4 md:px-6 py-2.5 text-[13px] font-bold tracking-wide rounded-full border border-border text-text-main hover:bg-sidebar transition-colors disabled:opacity-50 flex items-center gap-2"
                         >
                             {submittingTo === 'DRAFT' ? <Loader2 size={16} className="animate-spin" /> : null}
                             Save as Draft
@@ -134,7 +137,7 @@ const InvoiceCreatePage = () => {
                         <button
                             onClick={() => handleSave('PAID')}
                             disabled={!!submittingTo}
-                            className="px-6 py-2.5 text-[13px] font-bold tracking-wide rounded-full bg-[#96F26D] text-[#1D3216] hover:brightness-95 hover:shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
+                            className="flex-1 md:flex-none justify-center px-4 md:px-6 py-2.5 text-[13px] font-bold tracking-wide rounded-full bg-[#96F26D] text-[#1D3216] hover:brightness-95 hover:shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
                         >
                             {submittingTo === 'PAID' ? <Loader2 size={16} className="animate-spin" /> : null}
                             Send Invoice
@@ -143,10 +146,10 @@ const InvoiceCreatePage = () => {
                 </div>
             </header>
 
-            <div className="flex-1 p-8 grid grid-cols-1 xl:grid-cols-2 gap-8 w-full max-w-[1700px] mx-auto items-stretch h-[calc(100vh-80px)] overflow-hidden">
+            <div className="flex-1 p-4 md:p-8 grid grid-cols-1 xl:grid-cols-2 gap-6 md:gap-8 w-full max-w-[1700px] mx-auto items-stretch h-auto xl:h-[calc(100vh-80px)] overflow-x-hidden xl:overflow-hidden">
 
                 {/* LEFT: FORM BOX */}
-                <div className="space-y-8 flex flex-col bg-white rounded-2xl border border-border pb-8 pt-10 shadow-none h-full overflow-y-auto custom-scrollbar px-8">
+                <div className="space-y-6 md:space-y-8 flex flex-col bg-white rounded-2xl border border-border pb-8 pt-6 md:pt-10 shadow-none h-full overflow-y-auto xl:overflow-y-auto custom-scrollbar px-5 md:px-8">
                     {/* Bill To Section */}
                     <div>
                         <label className="block text-[13px] text-text-main mb-2 font-medium">Bill to</label>
@@ -180,7 +183,7 @@ const InvoiceCreatePage = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-[13px] text-text-main mb-2 font-medium">Invoice number</label>
                             <input
@@ -205,7 +208,7 @@ const InvoiceCreatePage = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                         <div>
                             <label className="block text-[13px] text-text-main mb-2 font-medium">Issue date</label>
                             <div className="relative">
@@ -272,55 +275,60 @@ const InvoiceCreatePage = () => {
                             </div>
                         </div>
 
-                        {/* List items header */}
-                        <div className="grid grid-cols-[3fr_1fr_1fr_1fr_40px] gap-4 mb-2">
-                            <span className="text-[13px] text-text-main font-medium">Items</span>
-                            <span className="text-[13px] text-text-main font-medium">QTY</span>
-                            <span className="text-[13px] text-text-main font-medium">Rate</span>
-                            <span className="text-[13px] text-text-main font-medium">Total</span>
-                            <span></span>
-                        </div>
-
-                        <div className="space-y-3">
-                            {items.map((item, index) => (
-                                <div key={item.id} className="grid grid-cols-[3fr_1fr_1fr_1fr_40px] gap-4 items-center">
-                                    <input
-                                        type="text"
-                                        placeholder="Item Description"
-                                        value={item.description}
-                                        onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
-                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
-                                    />
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={item.quantity === 0 ? '' : item.quantity}
-                                        onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
-                                        placeholder="0"
-                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
-                                    />
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        value={item.unitPrice === 0 ? '' : item.unitPrice}
-                                        onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)}
-                                        placeholder="0"
-                                        className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
-                                    />
-                                    <div className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-muted h-[42px] flex items-center shadow-none bg-gray-50/50">
-                                        {item.quantity && item.unitPrice ? (item.quantity * item.unitPrice).toFixed(0) : '0'}
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => removeItem(item.id)}
-                                        disabled={items.length === 1}
-                                        className="p-2 text-text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
+                        {/* List items wrapper */}
+                        <div className="overflow-x-auto custom-scrollbar pb-4 -mx-1 px-1">
+                            <div className="min-w-[500px]">
+                                {/* List items header */}
+                                <div className="grid grid-cols-[3fr_1fr_1fr_1fr_40px] gap-2 md:gap-4 mb-2">
+                                    <span className="text-[13px] text-text-main font-medium">Items</span>
+                                    <span className="text-[13px] text-text-main font-medium">QTY</span>
+                                    <span className="text-[13px] text-text-main font-medium">Rate</span>
+                                    <span className="text-[13px] text-text-main font-medium">Total</span>
+                                    <span></span>
                                 </div>
-                            ))}
+
+                                <div className="space-y-3">
+                                    {items.map((item, index) => (
+                                        <div key={item.id} className="grid grid-cols-[3fr_1fr_1fr_1fr_40px] gap-2 md:gap-4 items-center">
+                                            <input
+                                                type="text"
+                                                placeholder="Item Description"
+                                                value={item.description}
+                                                onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
+                                                className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={item.quantity === 0 ? '' : item.quantity}
+                                                onChange={(e) => handleItemChange(item.id, 'quantity', e.target.value)}
+                                                placeholder="0"
+                                                className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
+                                            />
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={item.unitPrice === 0 ? '' : item.unitPrice}
+                                                onChange={(e) => handleItemChange(item.id, 'unitPrice', e.target.value)}
+                                                placeholder="0"
+                                                className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-main focus:outline-none focus:border-[#a5e27a] focus:ring-1 focus:ring-[#a5e27a] transition-all placeholder:text-text-muted"
+                                            />
+                                            <div className="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-[14px] text-text-muted h-[42px] flex items-center shadow-none bg-gray-50/50">
+                                                {item.quantity && item.unitPrice ? (item.quantity * item.unitPrice).toFixed(0) : '0'}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItem(item.id)}
+                                                disabled={items.length === 1}
+                                                className="p-2 text-text-muted hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         <button
@@ -334,13 +342,13 @@ const InvoiceCreatePage = () => {
                 </div>
 
                 {/* RIGHT: LIVE PREVIEW */}
-                <div className={`transition-all duration-300 h-full ${!showPreview ? 'opacity-0 scale-[0.98] pointer-events-none absolute' : 'relative'}`}>
+                <div className={`transition-all duration-300 xl:h-full ${!showPreview ? 'opacity-0 scale-[0.98] h-0 xl:h-auto pointer-events-none xl:absolute' : 'relative mt-6 xl:mt-0'}`}>
                     {/* Outer Gray wrapper similar to the picture */}
-                    <div className="bg-sidebar border border-border rounded-[20px] p-6 lg:p-10 min-h-[700px] shadow-sm flex flex-col h-full">
-                        <h2 className="text-[15px] font-bold text-text-main mb-6 pl-1 tracking-tight shrink-0">Preview</h2>
+                    <div className="bg-sidebar border border-border rounded-[20px] p-4 lg:p-10 min-h-[500px] xl:min-h-[700px] shadow-sm flex flex-col h-full overflow-x-auto custom-scrollbar">
+                        <h2 className="text-[15px] font-bold text-text-main mb-6 pl-1 tracking-tight shrink-0 hidden xl:block">Preview</h2>
 
                         {/* The White Document Card */}
-                        <div className="bg-white border border-border rounded-[16px] p-8 lg:p-10 shadow-sm flex flex-col flex-1 shrink-0 overflow-hidden">
+                        <div className="bg-white border border-border rounded-[16px] p-6 lg:p-10 shadow-sm flex flex-col flex-1 shrink-0 overflow-hidden min-w-[600px] mx-auto w-full max-w-[800px]">
 
                             {/* Header */}
                             <div className="flex justify-between items-start mb-10">
